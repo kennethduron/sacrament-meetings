@@ -40,7 +40,7 @@ Checked 2026-11-08 for repository `kennethduron/sacrament-meetings`.
 - Existing new project: `sacrament-meetings` in `kennethduronpaz-7247s-projects`; framework preset is configured as Next.js.
 - Vercel Authentication/SSO protection is disabled for this project only. This was checked with the Vercel CLI and the preview endpoints were then tested without authentication.
 - Production alias: https://sacrament-meetings-ten-livid.vercel.app — points to the `main` scaffold deployment, not the Week 02 feature implementation.
-- Review Preview: https://sacrament-meetings-2cdcva7gk-kennethduronpaz-7247s-projects.vercel.app — Ready; built from `peer-code-review` commit `68e3da9`.
+- Stable review Preview alias: https://sacrament-meetings-peer-review.vercel.app — points to the latest Preview deployment for `peer-code-review`.
 - Public Preview checks: `/`, `/meetings`, `/meetings/1`, `/meetings/current` returned 200 HTML; `/api/meetings` returned 200 JSON with 5 records; date-filtered list returned 1 matching record; empty date and invalid ID returned 400 JSON; valid missing ID returned 404 JSON.
 - The account's GitHub Login Connection is not yet linked to Vercel. The official `vercel git connect` command returned HTTP 400 requiring a GitHub Login Connection. The current Preview is a direct CLI deployment and is accessible, but future Git pushes will not trigger automatic deployments until the account connection is added.
 - Production `/` returned 200 after the project framework was changed to Next.js. The deployed source on Production is the scaffold commit on `main`.
@@ -64,7 +64,7 @@ Checked 2026-11-08 for repository `kennethduron/sacrament-meetings`.
 
   ```text
   Week 02: https://github.com/kennethduron/sacrament-meetings/pull/1
-  Week 02: https://sacrament-meetings-2cdcva7gk-kennethduronpaz-7247s-projects.vercel.app
+  Week 02: https://sacrament-meetings-peer-review.vercel.app
   ```
 
 - Do not enter an assigned reviewer from memory unless the team membership document confirms that person.

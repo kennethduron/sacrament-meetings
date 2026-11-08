@@ -4,9 +4,9 @@
 
 - GitHub repository: https://github.com/kennethduron/sacrament-meetings
 - Open peer-review pull request: https://github.com/kennethduron/sacrament-meetings/pull/1
-- Vercel Preview for the `peer-code-review` implementation: https://sacrament-meetings-2cdcva7gk-kennethduronpaz-7247s-projects.vercel.app
+- Vercel Preview for the `peer-code-review` implementation: https://sacrament-meetings-peer-review.vercel.app
 
-The `main` branch remains the original create-next-app scaffold at commit `fad44b2`. The implementation is on `peer-code-review` at commit `68e3da9`, and Pull Request #1 is open and intentionally unmerged. The Preview was deployed from that branch with the Vercel CLI. Vercel's GitHub login connection is not yet linked, so pushes do not currently trigger automatic Vercel builds.
+The `main` branch remains the original create-next-app scaffold at commit `fad44b2`. The implementation is on `peer-code-review`, and Pull Request #1 is open and intentionally unmerged. The Preview was deployed from that branch with the Vercel CLI and has a stable project alias. Vercel's GitHub login connection is not yet linked, so pushes do not currently trigger automatic Vercel builds.
 
 ## Architectural / Component Reflection
 
