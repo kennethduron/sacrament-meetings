@@ -4,7 +4,7 @@
 
 - GitHub repository: https://github.com/kennethduron/sacrament-meetings
 - Open pull request (`peer-code-review` → `main`): https://github.com/kennethduron/sacrament-meetings/pull/1
-- Vercel Preview for the `peer-code-review` implementation: pending refreshed deployment after this evidence update.
+- Vercel Preview for the Week 03 implementation: https://sacrament-meetings-nwhsbvbe5-kennethduronpaz-7247s-projects.vercel.app (Ready).
 
 ## Reflection
 

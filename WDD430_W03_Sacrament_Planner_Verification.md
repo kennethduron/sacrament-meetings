@@ -7,13 +7,14 @@
 - Pull request: [#1, open from `peer-code-review` to `main`](https://github.com/kennethduron/sacrament-meetings/pull/1)
 - `main` was not changed or merged.
 - The changes in this project are an individual Week 03 submission.
+- GitHub attributes the existing commits on this PR, including the first evidence update, to the login `kennethmarjorie8` while showing the author name Kenneth Duron. The published history was not rewritten. This repository now has a local-only Git author configuration for Kenneth Duron using the `kennethduron` account's GitHub noreply identity; future commits will use it.
 
 ## Neon and application configuration
 
 - Vercel CLI lists `DATABASE_URL` and the linked Neon variables for Preview, Production, and Development. Vercel reports their values as encrypted; no secret value was printed or copied into this report.
 - The user ran `database/meetings.sql` in the Neon SQL Editor. The deployed application's read API independently confirmed the table and nine seed records.
 - `.env.local` is ignored by Git and contains no `DATABASE_URL` entry. It contains only the Vercel local-session variable. A local `vercel dev --listen 3000` attempt could not retrieve project configuration (`fetch failed`), so a direct local database connection was not verified.
-- The latest existing Preview used for the database checks was [the Ready W03 deployment](https://sacrament-meetings-k8pwcoarn-kennethduronpaz-7247s-projects.vercel.app). A refreshed Preview will be recorded after the documentation commit is pushed and deployed.
+- The verified Ready Preview used for the final API checks is [the latest W03 deployment](https://sacrament-meetings-nwhsbvbe5-kennethduronpaz-7247s-projects.vercel.app), created from the `peer-code-review` working tree after commit `338f7c7`.
 
 ## Code and safety review
 
@@ -48,6 +49,5 @@
 
 ## Pull request and Preview follow-up
 
-- PR #1 is open and unmerged. Its description needs to reflect the completed Neon migration and current verification results.
-- The existing Ready Preview proved the application server can connect to Neon through successful database-backed API reads.
-- After pushing this report update, create a fresh Preview from `peer-code-review` and record its exact deployment URL and status. The prior Preview remains valid evidence for the read tests above; it predates this documentation-only commit.
+- PR #1 is open and unmerged. Its description should reflect the completed Neon migration and current verification results.
+- The Ready Preview proved the application server can connect to Neon through successful database-backed API reads. The final deploy was created after the `peer-code-review` evidence commit; a subsequent documentation-only commit updates this report with that Preview URL.
