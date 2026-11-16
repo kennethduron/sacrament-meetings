@@ -4,7 +4,7 @@
 
 - GitHub repository: https://github.com/kennethduron/sacrament-meetings
 - Open pull request (`peer-code-review` → `main`): https://github.com/kennethduron/sacrament-meetings/pull/1
-- W03 Vercel Preview (`peer-code-review` commit `c777b6e`): https://sacrament-meetings-50rapf01a-kennethduronpaz-7247s-projects.vercel.app
+- W03 Vercel Preview (Ready; app code from `peer-code-review` commit `8c12333`): https://sacrament-meetings-k8pwcoarn-kennethduronpaz-7247s-projects.vercel.app
 
 The W03 Preview deployment is Ready and its pages respond, but the meetings page falls back to its safe error state because the SQL table has not yet been created. Vercel logs confirm the Preview reached Neon and received PostgreSQL error `42P01` (`relation "meetings" does not exist`). The API returns a generic HTTP 500 until the migration is run.
 

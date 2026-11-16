@@ -33,7 +33,7 @@
 | `GET /api/meetings/abc` | Passed | Returned HTTP 400 `application/json`. |
 | Local `GET /api/meetings/999999` | Not verifiable | Returns generic HTTP 500 without a local database URL; database-backed 404 is not tested locally. |
 | Real Neon connection from hosted Preview | Partially verified | Runtime logs show PostgreSQL error `42P01` `relation "meetings" does not exist`, proving the Preview reaches the configured database. The table is not created yet. |
-| Hosted Preview routes | Partial | New Preview is Ready at https://sacrament-meetings-50rapf01a-kennethduronpaz-7247s-projects.vercel.app for uploaded commit `c777b6e`. `/`, `/meetings`, `/meetings?page=2`, `/meetings?query=smith`, `/meetings/current`, `/meetings/new` returned HTTP 200; database-backed meeting content fails until schema setup. `/api/meetings` returned 500 JSON and `/api/meetings/abc` returned 400 JSON. |
+| Hosted Preview routes | Partial | New Preview is Ready at https://sacrament-meetings-k8pwcoarn-kennethduronpaz-7247s-projects.vercel.app; app code is from `peer-code-review` commit `8c12333`. `/`, `/meetings`, `/meetings?page=2`, `/meetings?query=smith`, `/meetings/current`, `/meetings/new` returned HTTP 200; database-backed meeting content fails until schema setup. `/api/meetings` returned 500 JSON and `/api/meetings/abc` returned 400 JSON. |
 | Database schema, eight records, search results, page 2 data, persistence | Not verified | `database/meetings.sql` is repeat-safe but not yet run. Vercel environment variables are encrypted, so local CLI cannot access the connection string for direct SQL execution. |
 | Browser accessibility, keyboard, responsive, Lighthouse | Not run | No authorized browser surface was available. |
 
