@@ -33,7 +33,7 @@ export interface SacramentMeeting {
 }
 
 export function isSacramentMeeting(meetingType: MeetingType): boolean {
-  return meetingType === "regular" || meetingType === "testimony";
+  return meetingType === "regular" || meetingType === "testimony" || meetingType === "special";
 }
 
 export function meetingTypeLabel(meetingType: MeetingType): string {

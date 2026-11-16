@@ -29,11 +29,12 @@
 | `npm.cmd run build` | Passed | Next.js 16.4.5 compiled and generated all routes. |
 | `git diff --check` | Passed | No whitespace errors; Git emitted only line-ending conversion warnings. |
 | Local HTTP route smoke check | Partial | On port 3001, `/`, `/meetings`, `/meetings?page=2`, `/meetings?query=smith`, `/meetings/current`, and `/meetings/new` returned HTTP 200. The meetings page shows its error boundary because there is no database URL; these are route-shell checks, not successful data checks. |
-| `GET /api/meetings` and `GET /api/meetings?date=2026-11-15` | Blocked by setup | Both returned HTTP 500 `application/json` because `DATABASE_URL` is absent. The application logs only an error class and the response is generic. |
+| Local `GET /api/meetings` and date filter | Blocked by local setup | Returned generic HTTP 500 JSON because `.env.local` has no `DATABASE_URL`. |
 | `GET /api/meetings/abc` | Passed | Returned HTTP 400 `application/json`. |
-| `GET /api/meetings/999999` | Not verifiable | Returned HTTP 500 because no database is configured; expected database-backed 404 has not been tested. |
-| Real PostgreSQL connection, data count, search results, page 2, persistence | Not run | The Neon resource is connected to Preview/Production, but the schema and seed script have not been run. Encrypted credentials are not available to the local CLI for a direct SQL connection. |
-| Hosted W03 Preview | Not deployed | Vercel CLI is authenticated; the existing Preview alias currently returns HTTP 200 but predates these changes. No W03 Preview exists yet. |
+| Local `GET /api/meetings/999999` | Not verifiable | Returns generic HTTP 500 without a local database URL; database-backed 404 is not tested locally. |
+| Real Neon connection from hosted Preview | Partially verified | Runtime logs show PostgreSQL error `42P01` `relation "meetings" does not exist`, proving the Preview reaches the configured database. The table is not created yet. |
+| Hosted Preview routes | Partial | New Preview is Ready at https://sacrament-meetings-50rapf01a-kennethduronpaz-7247s-projects.vercel.app for uploaded commit `c777b6e`. `/`, `/meetings`, `/meetings?page=2`, `/meetings?query=smith`, `/meetings/current`, `/meetings/new` returned HTTP 200; database-backed meeting content fails until schema setup. `/api/meetings` returned 500 JSON and `/api/meetings/abc` returned 400 JSON. |
+| Database schema, eight records, search results, page 2 data, persistence | Not verified | `database/meetings.sql` is repeat-safe but not yet run. Vercel environment variables are encrypted, so local CLI cannot access the connection string for direct SQL execution. |
 | Browser accessibility, keyboard, responsive, Lighthouse | Not run | No authorized browser surface was available. |
 
 ## GitHub / Vercel state
@@ -45,4 +46,4 @@
 
 ## Required next step
 
-In the existing Vercel project `sacrament-meetings`, connect Neon to the **Development** environment as well as Preview and Production, then run `database/meetings.sql` in Neon’s SQL editor. Do not send the connection string in chat. After the schema and nine seed rows are verified, the local, Preview, and production checks can be completed and the existing PR updated.
+In the existing Vercel project `sacrament-meetings`, connect Neon to the **Development** environment as well as Preview and Production. In the Neon SQL Editor, run the contents of `database/meetings.sql` from the repository. This is safe to rerun: the table is created if absent and seed rows do not replace existing dates. Do not send the connection string in chat. After the schema and nine seed rows are verified, the remaining local, Preview, search, pagination, and persistence checks can be completed.
