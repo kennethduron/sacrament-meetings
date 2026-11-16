@@ -1,49 +1,53 @@
 # WDD 430 W03 — Verification Record
 
-## Scope
+## Scope and GitHub state
 
-- Repository: `kennethduron/sacrament-meetings`
-- Branch: `peer-code-review`
-- Existing PR: [#1](https://github.com/kennethduron/sacrament-meetings/pull/1), open, base `main`, head `peer-code-review`
-- Main remains the original scaffold. No merge was performed.
-- The user connected the free Neon resource to the existing Vercel project for Preview and Production. `vercel env ls` confirmed encrypted database variables in those two environments; it showed no Development variables.
-- The local `.env.local` has no `DATABASE_URL`. Vercel CLI `env pull` generated empty values for encrypted Neon variables, and `vercel env run` did not expose `DATABASE_URL` to the child process. Credential contents were not printed or inspected.
+- Repository: [kennethduron/sacrament-meetings](https://github.com/kennethduron/sacrament-meetings)
+- Working branch: `peer-code-review`
+- Pull request: [#1, open from `peer-code-review` to `main`](https://github.com/kennethduron/sacrament-meetings/pull/1)
+- `main` was not changed or merged.
+- The changes in this project are an individual Week 03 submission.
 
-## Code changes prepared locally
+## Neon and application configuration
 
-- Added `@neondatabase/serverless` and `use-debounce`.
-- Replaced the in-memory read model with async, parameterized Neon queries for list, count, and detail operations. Added five-item pagination, URL search, optional date filtering, and generic database-error responses.
-- Added `database/meetings.sql`: repeat-safe schema plus nine fictional records. The five original sample dates and meeting content are preserved; inserts skip dates already present.
-- Grouped public pages under `app/(public)` and added a separate admin layout and `/meetings/new` Week 04 placeholder.
-- Added debounced URL search, pagination links that preserve filters, an archive error boundary, and API validation/error handling.
-- Kept add/update/delete function signatures as Week 04 stubs.
-- Updated README setup/API documentation.
+- Vercel CLI lists `DATABASE_URL` and the linked Neon variables for Preview, Production, and Development. Vercel reports their values as encrypted; no secret value was printed or copied into this report.
+- The user ran `database/meetings.sql` in the Neon SQL Editor. The deployed application's read API independently confirmed the table and nine seed records.
+- `.env.local` is ignored by Git and contains no `DATABASE_URL` entry. It contains only the Vercel local-session variable. A local `vercel dev --listen 3000` attempt could not retrieve project configuration (`fetch failed`), so a direct local database connection was not verified.
+- The latest existing Preview used for the database checks was [the Ready W03 deployment](https://sacrament-meetings-k8pwcoarn-kennethduronpaz-7247s-projects.vercel.app). A refreshed Preview will be recorded after the documentation commit is pushed and deployed.
 
-## Checks run
+## Code and safety review
 
-| Check | Result | Evidence / limitation |
+- Read operations use `@neondatabase/serverless` and parameterized tagged-template SQL for date filters, search terms, IDs, and pagination values.
+- Public and admin pages are separated into Next.js route groups without changing public paths. Meeting search is debounced, represented in URL parameters, and resets the page to 1. Pagination uses five records per page and preserves the current query.
+- `database/meetings.sql` uses `CREATE TABLE IF NOT EXISTS` and `ON CONFLICT (date) DO NOTHING`; it does not replace existing meeting rows.
+- API errors return generic JSON messages. Logs include an error class only, not the connection string or database details.
+- `.env.local` is ignored by Git. No environment files or database credentials were added to the repository.
+- Week 04 write operations remain intentionally unimplemented.
+
+## Verification performed in this run
+
+| Check | Result | Evidence |
 |---|---|---|
-| `npm.cmd install @neondatabase/serverless use-debounce` | Passed | Dependencies and lockfile updated. |
-| `npm.cmd run lint` | Passed | Final run exited 0 with no warnings. |
-| `npm.cmd run typecheck` | Passed | Final run exited 0. The first run had stale `.next/types` after route moves; the build regenerated them and the repeat passed. |
-| `npm.cmd run build` | Passed | Next.js 16.4.5 compiled and generated all routes. |
-| `git diff --check` | Passed | No whitespace errors; Git emitted only line-ending conversion warnings. |
-| Local HTTP route smoke check | Partial | On port 3001, `/`, `/meetings`, `/meetings?page=2`, `/meetings?query=smith`, `/meetings/current`, and `/meetings/new` returned HTTP 200. The meetings page shows its error boundary because there is no database URL; these are route-shell checks, not successful data checks. |
-| Local `GET /api/meetings` and date filter | Blocked by local setup | Returned generic HTTP 500 JSON because `.env.local` has no `DATABASE_URL`. |
-| `GET /api/meetings/abc` | Passed | Returned HTTP 400 `application/json`. |
-| Local `GET /api/meetings/999999` | Not verifiable | Returns generic HTTP 500 without a local database URL; database-backed 404 is not tested locally. |
-| Real Neon connection from hosted Preview | Partially verified | Runtime logs show PostgreSQL error `42P01` `relation "meetings" does not exist`, proving the Preview reaches the configured database. The table is not created yet. |
-| Hosted Preview routes | Partial | New Preview is Ready at https://sacrament-meetings-k8pwcoarn-kennethduronpaz-7247s-projects.vercel.app; app code is from `peer-code-review` commit `8c12333`. `/`, `/meetings`, `/meetings?page=2`, `/meetings?query=smith`, `/meetings/current`, `/meetings/new` returned HTTP 200; database-backed meeting content fails until schema setup. `/api/meetings` returned 500 JSON and `/api/meetings/abc` returned 400 JSON. |
-| Database schema, eight records, search results, page 2 data, persistence | Not verified | `database/meetings.sql` is repeat-safe but not yet run. Vercel environment variables are encrypted, so local CLI cannot access the connection string for direct SQL execution. |
-| Browser accessibility, keyboard, responsive, Lighthouse | Not run | No authorized browser surface was available. |
+| `npm run lint` | PASS | Exit code 0; no warnings. |
+| `npm run typecheck` | PASS | `tsc --noEmit`, exit code 0. |
+| `npm run build` | PASS | Next.js 16.4.5 production build completed; routes were generated. |
+| Unit test script | Not configured | `package.json` has no test script. |
+| Vercel environment scope | PASS | `vercel env ls` showed the linked database variables for Preview, Production, and Development, all encrypted. |
+| Preview `GET /api/meetings` | PASS | HTTP 200 JSON, 5 rows on page 1. |
+| Preview `GET /api/meetings?page=2` | PASS | HTTP 200 JSON, 4 rows; 5 + 4 = 9 records across both pages. |
+| Preview search `?query=Casey%20Sample` | PASS | HTTP 200 JSON, 3 matching rows. |
+| Preview non-matching search | PASS | HTTP 200 JSON, empty array. |
+| Preview date filter `?date=2026-11-15` | PASS | HTTP 200 JSON, one matching meeting. |
+| Preview `GET /api/meetings/9` | PASS | HTTP 200 JSON with expected meeting fields and date `2026-11-15`. |
+| Preview invalid date and `page=0` | PASS | HTTP 400 JSON. |
+| Preview `GET /api/meetings/abc` | PASS | HTTP 400 JSON. |
+| Preview `GET /api/meetings/9999` | PASS | HTTP 404 JSON. |
+| Preview page routes `/`, `/meetings`, `/meetings?page=2`, `/meetings?query=smith`, `/meetings/current`, `/meetings/new` | PASS for HTTP response | Each returned HTTP 200. The browser integration was unavailable, so client-side hydration and visible rendered results were not manually inspected. |
+| Current error response under a real database outage | Not exercised | The handlers contain generic 500 responses; no outage was induced against the live database. |
+| Responsive, keyboard, browser-console and print-preview checks | Not performed in this run | No browser was available through Computer Use. |
 
-## GitHub / Vercel state
+## Pull request and Preview follow-up
 
-- PR #1 remains open. A read-only GitHub CLI check showed `reviews: []` and `comments: []`; there were no received review comments to address.
-- Vercel CLI can list the existing project's deployments. The most recent listed deployments are five days old; none contain the current local Week 03 changes.
-- `.env.local` exists, is ignored by Git, and was checked without printing its contents. No `DATABASE_URL` entry is present.
-- No code changes have been committed or pushed in this turn. The Week 03 changes and reports remain local on `peer-code-review` pending Neon setup and database verification.
-
-## Required next step
-
-In the existing Vercel project `sacrament-meetings`, connect Neon to the **Development** environment as well as Preview and Production. In the Neon SQL Editor, run the contents of `database/meetings.sql` from the repository. This is safe to rerun: the table is created if absent and seed rows do not replace existing dates. Do not send the connection string in chat. After the schema and nine seed rows are verified, the remaining local, Preview, search, pagination, and persistence checks can be completed.
+- PR #1 is open and unmerged. Its description needs to reflect the completed Neon migration and current verification results.
+- The existing Ready Preview proved the application server can connect to Neon through successful database-backed API reads.
+- After pushing this report update, create a fresh Preview from `peer-code-review` and record its exact deployment URL and status. The prior Preview remains valid evidence for the read tests above; it predates this documentation-only commit.
