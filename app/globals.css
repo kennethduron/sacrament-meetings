@@ -156,6 +156,46 @@ button:focus-visible {
   background: #f4f7f7;
 }
 
+.button-danger {
+  border-color: #d5a49c;
+  background: #fff8f6;
+  color: #7c3028;
+  cursor: pointer;
+}
+
+.button-danger:hover {
+  border-color: #b8786d;
+  background: #fbe9e5;
+}
+
+.button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  min-height: 2.9rem;
+  border: 1px solid #b9c7cc;
+  border-radius: 0.7rem;
+  background: #fff;
+  padding: 0.7rem 0.8rem;
+  color: #172b3d;
+  font: inherit;
+  line-height: 1.5;
+}
+
+.form-control:focus-visible {
+  border-color: #355169;
+  outline: 3px solid rgb(53 81 105 / 25%);
+  outline-offset: 1px;
+}
+
+.form-control[aria-invalid="true"] {
+  border-color: #9f3c30;
+}
+
 .button svg {
   width: 1.2rem;
   height: 1.2rem;

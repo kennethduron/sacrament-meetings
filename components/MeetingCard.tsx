@@ -1,4 +1,5 @@
 import Link from "next/link";
+import DeleteMeetingForm from "@/components/DeleteMeetingForm";
 import { formatMeetingDate } from "@/lib/date-utils";
 import { isSacramentMeeting, meetingTypeLabel, type SacramentMeeting } from "@/lib/types";
 
@@ -43,6 +44,10 @@ export default function MeetingCard({ meeting }: MeetingCardProps) {
       >
         View meeting details <span aria-hidden="true">→</span>
       </Link>
+      <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-slate-200 pt-4">
+        <Link className="button button-secondary" href={`/meetings/${meeting.id}/edit`}>Edit</Link>
+        <DeleteMeetingForm meetingId={meeting.id} />
+      </div>
     </article>
   );
 }

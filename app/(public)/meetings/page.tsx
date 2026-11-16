@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import MeetingCard from "@/components/MeetingCard";
 import MeetingSearch from "@/components/MeetingSearch";
@@ -55,6 +56,10 @@ export default async function MeetingsPage({
       </header>
 
       <section aria-label="Meeting archive" className="mt-8 space-y-7">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-slate-600">Manage the fictional sample archive:</p>
+          <Link className="button button-primary" href="/meetings/new">Create a meeting</Link>
+        </div>
         <Suspense fallback={<div aria-live="polite" className="status-panel">Loading search controls...</div>}>
           <MeetingSearch />
         </Suspense>

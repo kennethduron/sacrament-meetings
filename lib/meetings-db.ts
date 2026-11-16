@@ -159,24 +159,87 @@ export async function getMeetingById(id: number): Promise<SacramentMeeting | nul
   return rows[0] ? toMeeting(rows[0]) : null;
 }
 
-// Mutation functions are intentionally deferred until Week 04 forms are built.
 export async function addMeeting(
   data: Omit<SacramentMeeting, "id">,
 ): Promise<SacramentMeeting> {
-  void data;
-  throw new Error("addMeeting: database implementation is planned for Week 04.");
+  const sql = getSqlClient();
+  const rows = (await sql`
+    INSERT INTO meetings (
+      date, meeting_type, presiding, conducting, announcements,
+      opening_hymn, opening_prayer, ward_business, stake_business,
+      sacrament_hymn, speakers, closing_hymn, closing_prayer
+    ) VALUES (
+      ${data.date}::date,
+      ${data.meetingType},
+      ${data.presiding},
+      ${data.conducting},
+      ${data.announcements ?? []},
+      ${JSON.stringify(data.openingHymn)}::jsonb,
+      ${data.openingPrayer},
+      ${JSON.stringify(data.wardBusiness)}::jsonb,
+      ${data.stakeBusiness},
+      ${JSON.stringify(data.sacramentHymn)}::jsonb,
+      ${JSON.stringify(data.speakers)}::jsonb,
+      ${JSON.stringify(data.closingHymn)}::jsonb,
+      ${data.closingPrayer}
+    )
+    RETURNING
+      id, to_char(date, 'YYYY-MM-DD') AS date,
+      meeting_type AS "meetingType", presiding, conducting, announcements,
+      opening_hymn AS "openingHymn", opening_prayer AS "openingPrayer",
+      ward_business AS "wardBusiness", stake_business AS "stakeBusiness",
+      sacrament_hymn AS "sacramentHymn", speakers,
+      closing_hymn AS "closingHymn", closing_prayer AS "closingPrayer"
+  `) as unknown as MeetingRow[];
+
+  if (!rows[0]) throw new Error("The meeting could not be created.");
+  return toMeeting(rows[0]);
 }
 
 export async function updateMeeting(
   id: number,
-  updates: Partial<SacramentMeeting>,
+  updates: Omit<SacramentMeeting, "id">,
 ): Promise<SacramentMeeting | null> {
-  void id;
-  void updates;
-  throw new Error("updateMeeting: database implementation is planned for Week 04.");
+  if (!Number.isSafeInteger(id) || id < 1) return null;
+
+  const sql = getSqlClient();
+  const rows = (await sql`
+    UPDATE meetings SET
+      date = ${updates.date}::date,
+      meeting_type = ${updates.meetingType},
+      presiding = ${updates.presiding},
+      conducting = ${updates.conducting},
+      announcements = ${updates.announcements ?? []},
+      opening_hymn = ${JSON.stringify(updates.openingHymn)}::jsonb,
+      opening_prayer = ${updates.openingPrayer},
+      ward_business = ${JSON.stringify(updates.wardBusiness)}::jsonb,
+      stake_business = ${updates.stakeBusiness},
+      sacrament_hymn = ${JSON.stringify(updates.sacramentHymn)}::jsonb,
+      speakers = ${JSON.stringify(updates.speakers)}::jsonb,
+      closing_hymn = ${JSON.stringify(updates.closingHymn)}::jsonb,
+      closing_prayer = ${updates.closingPrayer}
+    WHERE id = ${id}
+    RETURNING
+      id, to_char(date, 'YYYY-MM-DD') AS date,
+      meeting_type AS "meetingType", presiding, conducting, announcements,
+      opening_hymn AS "openingHymn", opening_prayer AS "openingPrayer",
+      ward_business AS "wardBusiness", stake_business AS "stakeBusiness",
+      sacrament_hymn AS "sacramentHymn", speakers,
+      closing_hymn AS "closingHymn", closing_prayer AS "closingPrayer"
+  `) as unknown as MeetingRow[];
+
+  return rows[0] ? toMeeting(rows[0]) : null;
 }
 
 export async function deleteMeeting(id: number): Promise<boolean> {
-  void id;
-  throw new Error("deleteMeeting: database implementation is planned for Week 04.");
+  if (!Number.isSafeInteger(id) || id < 1) return false;
+
+  const sql = getSqlClient();
+  const rows = (await sql`
+    DELETE FROM meetings
+    WHERE id = ${id}
+    RETURNING id
+  `) as unknown as { id: number | string }[];
+
+  return rows.length > 0;
 }

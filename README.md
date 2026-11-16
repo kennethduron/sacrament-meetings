@@ -1,28 +1,30 @@
-# Sacrament Meeting Planner
+﻿# Sacrament Meeting Planner
 
-A WDD 430 Week 02–03 coursework application for browsing, searching, and printing Sunday meeting program examples. It uses Next.js App Router, TypeScript, Tailwind CSS, Neon PostgreSQL, and GET Route Handlers.
+A WDD 430 Week 02-04 coursework application for browsing, searching, printing, and managing fictional Sunday meeting programs. It uses Next.js App Router, TypeScript, Tailwind CSS, Neon PostgreSQL, GET Route Handlers, and Server Actions.
 
-> **Coursework demo:** all people, announcements, and hymn titles shown by this app are fictional sample data. It is not an official ward schedule and must not be used to plan a real meeting.
+> **Coursework demo:** all people, announcements, and hymn titles are fictional examples. This is not an official ward schedule.
 
 ## Features
 
-- Landing page with links to the current Sunday and meeting archive.
-- PostgreSQL-backed meeting records for `regular`, `testimony`, `stake`, `general`, and `special` meeting types.
+- Landing page with links to the current Sunday and the meeting archive.
+- PostgreSQL-backed records for regular, testimony, stake, general, and special meeting types.
 - Meeting list and agenda detail pages with loading, empty, error, and not-found feedback.
 - URL-based search across speakers, presiding leaders, conducting leaders, and meeting types, with five records per page.
-- Separate public and admin route-group layouts; meeting creation remains a Week 04 placeholder.
-- Current Sunday lookup using the visitor's local calendar date, with a safe archive fallback when there is no matching sample record.
-- Print Program action with print-specific CSS that removes navigation and controls.
-- Accessible active-route navigation, skip link, visible keyboard focus, responsive layouts, and reduced-motion handling.
-- Original local SVG illustration rendered through `next/image`; Geist fonts are loaded through `next/font/google`.
+- Separate public and admin route-group layouts.
+- Accessible create/edit forms with server-side Zod validation, field-level errors, pending states, and safe redirects.
+- Create, update, and delete Server Actions backed by parameterized Neon SQL.
+- Current Sunday lookup and print-specific CSS for meeting programs.
+- Visible keyboard focus, responsive layouts, reduced-motion handling, next/image illustration, and next/font fonts.
 
-Stake and general conference Sundays are explicitly presented as Sundays without a ward sacrament meeting. The UI does not show hymns, prayers, or a sacrament program for those records.
+Stake and general conference Sundays are represented without a ward sacrament program; the UI does not show hymns, prayers, or speakers for those records.
 
-## Set up the database
+**Security scope:** this is an unauthenticated coursework demo. Its Server Actions can change the sample archive. Use fictional data only; add authentication and authorization before using it with real meeting schedules.
 
-Create a free Neon database through the Vercel Storage integration and connect it to the existing `sacrament-meetings` Vercel project. Pull the Development environment variables into `.env.local` with the Vercel CLI. Keep this file private and out of Git.
+## Database setup
 
-Run [`database/meetings.sql`](database/meetings.sql) in the Neon SQL Editor. The script creates the required table and inserts nine fictional examples without replacing records already stored for those dates.
+The existing `sacrament-meetings` Vercel project is connected to a free Neon database. Pull Development variables into the ignored `.env.development.local` file with the Vercel CLI. Never commit environment files.
+
+Run [`database/meetings.sql`](database/meetings.sql) in the Neon SQL Editor only when setting up a new database. It uses `CREATE TABLE IF NOT EXISTS` and `ON CONFLICT (date) DO NOTHING`; it does not replace existing meeting rows.
 
 ## Run locally
 
@@ -40,30 +42,33 @@ Open <http://localhost:3000>.
 
 | Method | Endpoint | Behavior |
 | --- | --- | --- |
-| GET | `/api/meetings?query=smith&page=2` | Returns up to five matching records for the requested page, newest first. Search and page values are sent as SQL parameters. |
-| GET | `/api/meetings?date=YYYY-MM-DD` | Returns records matching the valid date; an invalid calendar date returns `400` JSON. |
-| GET | `/api/meetings/:id` | Returns `200` JSON for a valid existing integer ID, `400` JSON for an invalid ID, `404` JSON if the ID does not exist, or a generic `500` JSON response for a database failure. |
+| GET | `/api/meetings?query=smith&page=2` | Returns up to five matching records; search and pagination values are SQL parameters. |
+| GET | `/api/meetings?date=YYYY-MM-DD` | Returns records for a valid date, or `400` JSON for an invalid date. |
+| GET | `/api/meetings/:id` | Returns `200`, `400` for an invalid ID, `404` if absent, or generic `500` JSON for a database failure. |
 
-The meeting archive reads PostgreSQL on the server. The detail and current-Sunday views use the API. Database credentials are read from `DATABASE_URL`; they are never part of the source or API response.
+The archive reads PostgreSQL on the server. Database credentials are read from `DATABASE_URL`; they are not part of source code or API responses.
 
 ## Quality checks
 
 ```bash
 npm run lint
 npm run typecheck
+npm test
 npm run build
 ```
 
 ## Project structure
 
 ```text
-app/                 App Router pages, route groups, loading state, and GET Route Handlers
-components/          Shared header, search, pagination, cards, detail, and print button
-lib/types.ts         Meeting data contracts and meeting-type helpers
-lib/meetings-db.ts   Parameterized Neon PostgreSQL queries
-lib/date-utils.ts    Date display and ISO calendar-date validation
-database/            Repeat-safe table setup and fictional sample data
-public/              Original local illustration
+app/                 App Router pages, route groups, errors, and GET Route Handlers
+components/          Shared UI, search, pagination, meeting forms, and action buttons
+lib/types.ts         Meeting data contracts and helpers
+lib/meetings-db.ts   Parameterized Neon PostgreSQL reads and writes
+lib/actions.ts       Create, update, and delete Server Actions
+lib/meeting-form.ts  Zod validation and form-to-database mapping
+tests/               Form-validation tests
+database/            Repeat-safe schema and fictional sample data
+public/              Local illustration
 ```
 
-Week 02 implementation belongs on `peer-code-review`; `main` is retained as the generated Next.js baseline for the peer-review diff.
+Week 03 work from `peer-code-review` was merged into `main` through the course pull request. Week 04 development continues on `main` for the production submission.
