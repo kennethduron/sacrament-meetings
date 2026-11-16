@@ -40,8 +40,8 @@ export default function Home() {
             <Link className="button button-secondary" href="/meetings">Explore the archive</Link>
           </div>
           <div className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-3 border-t border-slate-200 pt-6 text-sm text-slate-500">
-            <span><strong className="text-navy-900">5</strong> sample Sundays</span>
-            <span><strong className="text-navy-900">4</strong> meeting types</span>
+            <span><strong className="text-navy-900">9</strong> sample Sundays</span>
+            <span><strong className="text-navy-900">5</strong> meeting types</span>
             <span>Printable agenda view</span>
           </div>
         </div>

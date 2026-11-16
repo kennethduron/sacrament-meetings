@@ -1,4 +1,4 @@
-export type MeetingType = "testimony" | "regular" | "stake" | "general";
+export type MeetingType = "testimony" | "regular" | "stake" | "general" | "special";
 
 export interface Hymn {
   number: number;
@@ -42,6 +42,7 @@ export function meetingTypeLabel(meetingType: MeetingType): string {
     testimony: "Testimony meeting",
     stake: "Stake meeting · no ward sacrament meeting",
     general: "General conference · no ward sacrament meeting",
+    special: "Special meeting",
   };
 
   return labels[meetingType];

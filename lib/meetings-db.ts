@@ -1,133 +1,182 @@
-import type { SacramentMeeting } from "@/lib/types";
+import { neon } from "@neondatabase/serverless";
+import type { Hymn, MeetingType, SacramentMeeting, SpeakerItem, WardBusinessItem } from "@/lib/types";
 
-const notApplicableHymn = { number: 0, title: "" };
+const ITEMS_PER_PAGE = 5;
+const MAX_SEARCH_LENGTH = 100;
 
-const meetings: SacramentMeeting[] = [
-  {
-    id: 1,
-    date: "2026-11-08",
-    meetingType: "regular",
-    presiding: "Jordan Sample",
-    conducting: "Morgan Example",
-    announcements: [
-      "Example notice: the service project sign-up closes next Sunday.",
-      "Example notice: the youth music rehearsal begins at 4:00 p.m.",
-    ],
-    openingHymn: { number: 1, title: "A Sabbath Morning (sample hymn)" },
-    openingPrayer: "Taylor Fiction",
-    wardBusiness: [
-      { description: "Example: sustain the proposed Primary activity leader." },
-    ],
-    stakeBusiness: false,
-    sacramentHymn: { number: 2, title: "Remembering the Savior (sample hymn)" },
-    speakers: [
-      {
-        name: "Casey Sample",
-        topic: "Finding peace through daily discipleship",
-        type: "speaker",
-      },
-      {
-        name: "Avery Fiction",
-        topic: "Small acts of service",
-        type: "speaker",
-      },
-    ],
-    closingHymn: { number: 3, title: "Walk in the Light (sample hymn)" },
-    closingPrayer: "Riley Example",
-  },
-  {
-    id: 2,
-    date: "2026-11-01",
-    meetingType: "testimony",
-    presiding: "Jordan Sample",
-    conducting: "Morgan Example",
-    announcements: ["Example notice: November ministering interviews are available."],
-    openingHymn: { number: 4, title: "Come with a Willing Heart (sample hymn)" },
-    openingPrayer: "Taylor Fiction",
-    wardBusiness: [],
-    stakeBusiness: false,
-    sacramentHymn: { number: 5, title: "In Remembrance (sample hymn)" },
-    speakers: [
-      {
-        name: "Members of the congregation (sample)",
-        topic: "Personal testimonies",
-        type: "speaker",
-      },
-    ],
-    closingHymn: { number: 6, title: "A Quiet Prayer (sample hymn)" },
-    closingPrayer: "Avery Fiction",
-  },
-  {
-    id: 3,
-    date: "2026-10-25",
-    meetingType: "stake",
-    presiding: "Not applicable to a ward sacrament program",
-    conducting: "Not applicable to a ward sacrament program",
-    openingHymn: notApplicableHymn,
-    openingPrayer: "",
-    wardBusiness: [],
-    stakeBusiness: true,
-    sacramentHymn: notApplicableHymn,
-    speakers: [],
-    closingHymn: notApplicableHymn,
-    closingPrayer: "",
-  },
-  {
-    id: 4,
-    date: "2026-10-18",
-    meetingType: "general",
-    presiding: "Not applicable to a ward sacrament program",
-    conducting: "Not applicable to a ward sacrament program",
-    openingHymn: notApplicableHymn,
-    openingPrayer: "",
-    wardBusiness: [],
-    stakeBusiness: false,
-    sacramentHymn: notApplicableHymn,
-    speakers: [],
-    closingHymn: notApplicableHymn,
-    closingPrayer: "",
-  },
-  {
-    id: 5,
-    date: "2026-10-11",
-    meetingType: "regular",
-    presiding: "Jordan Sample",
-    conducting: "Morgan Example",
-    announcements: [],
-    openingHymn: { number: 7, title: "A Place of Welcome (sample hymn)" },
-    openingPrayer: "Riley Example",
-    wardBusiness: [],
-    stakeBusiness: true,
-    sacramentHymn: { number: 8, title: "The Shepherd's Care (sample hymn)" },
-    speakers: [
-      {
-        name: "Casey Sample",
-        topic: "Covenants and community",
-        type: "speaker",
-      },
-      {
-        name: "Sample Ward Choir",
-        topic: "A musical reflection (sample)",
-        type: "musical-number",
-      },
-    ],
-    closingHymn: { number: 9, title: "Hope for the Journey (sample hymn)" },
-    closingPrayer: "Taylor Fiction",
-  },
-];
+type MeetingRow = {
+  id: number | string;
+  date: string;
+  meetingType: MeetingType;
+  presiding: string;
+  conducting: string;
+  announcements: string[] | null;
+  openingHymn: Hymn;
+  openingPrayer: string;
+  wardBusiness: WardBusinessItem[] | null;
+  stakeBusiness: boolean;
+  sacramentHymn: Hymn;
+  speakers: SpeakerItem[] | null;
+  closingHymn: Hymn;
+  closingPrayer: string;
+};
 
-export function getMeetings(date?: string | null): SacramentMeeting[] {
-  const orderedMeetings = [...meetings].sort((left, right) =>
-    right.date.localeCompare(left.date),
-  );
-
-  if (date) {
-    return orderedMeetings.filter((meeting) => meeting.date === date);
+function getSqlClient() {
+  const databaseUrl = process.env.DATABASE_URL;
+  if (!databaseUrl) {
+    throw new Error("DATABASE_URL is not configured.");
   }
 
-  return orderedMeetings;
+  return neon(databaseUrl);
 }
 
-export function getMeetingById(id: number): SacramentMeeting | null {
-  return meetings.find((meeting) => meeting.id === id) ?? null;
+function normalizeSearch(query: string): string {
+  return query.trim().slice(0, MAX_SEARCH_LENGTH);
+}
+
+function toMeeting(row: MeetingRow): SacramentMeeting {
+  return {
+    ...row,
+    id: Number(row.id),
+    announcements: row.announcements ?? [],
+    wardBusiness: row.wardBusiness ?? [],
+    speakers: row.speakers ?? [],
+  };
+}
+
+function searchPattern(query: string): string {
+  return `%${normalizeSearch(query)}%`;
+}
+
+export async function getMeetings(
+  query = "",
+  currentPage = 1,
+  date?: string | null,
+): Promise<SacramentMeeting[]> {
+  const sql = getSqlClient();
+  const pattern = searchPattern(query);
+  const hasSearch = normalizeSearch(query).length > 0;
+  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+
+  const rows = date
+    ? await sql`
+        SELECT
+          id,
+          to_char(date, 'YYYY-MM-DD') AS date,
+          meeting_type AS "meetingType",
+          presiding,
+          conducting,
+          announcements,
+          opening_hymn AS "openingHymn",
+          opening_prayer AS "openingPrayer",
+          ward_business AS "wardBusiness",
+          stake_business AS "stakeBusiness",
+          sacrament_hymn AS "sacramentHymn",
+          speakers,
+          closing_hymn AS "closingHymn",
+          closing_prayer AS "closingPrayer"
+        FROM meetings
+        WHERE date = ${date}::date
+          AND (
+            NOT ${hasSearch}
+            OR presiding ILIKE ${pattern}
+            OR conducting ILIKE ${pattern}
+            OR meeting_type ILIKE ${pattern}
+            OR speakers::text ILIKE ${pattern}
+          )
+        ORDER BY date DESC, id DESC
+        LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+      `
+    : await sql`
+        SELECT
+          id,
+          to_char(date, 'YYYY-MM-DD') AS date,
+          meeting_type AS "meetingType",
+          presiding,
+          conducting,
+          announcements,
+          opening_hymn AS "openingHymn",
+          opening_prayer AS "openingPrayer",
+          ward_business AS "wardBusiness",
+          stake_business AS "stakeBusiness",
+          sacrament_hymn AS "sacramentHymn",
+          speakers,
+          closing_hymn AS "closingHymn",
+          closing_prayer AS "closingPrayer"
+        FROM meetings
+        WHERE NOT ${hasSearch}
+          OR presiding ILIKE ${pattern}
+          OR conducting ILIKE ${pattern}
+          OR meeting_type ILIKE ${pattern}
+          OR speakers::text ILIKE ${pattern}
+        ORDER BY date DESC, id DESC
+        LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+      `;
+
+  return (rows as unknown as MeetingRow[]).map(toMeeting);
+}
+
+export async function getMeetingsTotalPages(query = ""): Promise<number> {
+  const sql = getSqlClient();
+  const pattern = searchPattern(query);
+  const hasSearch = normalizeSearch(query).length > 0;
+  const rows = (await sql`
+    SELECT COUNT(*) AS count
+    FROM meetings
+    WHERE NOT ${hasSearch}
+      OR presiding ILIKE ${pattern}
+      OR conducting ILIKE ${pattern}
+      OR meeting_type ILIKE ${pattern}
+      OR speakers::text ILIKE ${pattern}
+  `) as unknown as { count: number | string }[];
+
+  return Math.max(1, Math.ceil(Number(rows[0]?.count ?? 0) / ITEMS_PER_PAGE));
+}
+
+export async function getMeetingById(id: number): Promise<SacramentMeeting | null> {
+  const sql = getSqlClient();
+  const rows = (await sql`
+    SELECT
+      id,
+      to_char(date, 'YYYY-MM-DD') AS date,
+      meeting_type AS "meetingType",
+      presiding,
+      conducting,
+      announcements,
+      opening_hymn AS "openingHymn",
+      opening_prayer AS "openingPrayer",
+      ward_business AS "wardBusiness",
+      stake_business AS "stakeBusiness",
+      sacrament_hymn AS "sacramentHymn",
+      speakers,
+      closing_hymn AS "closingHymn",
+      closing_prayer AS "closingPrayer"
+    FROM meetings
+    WHERE id = ${id}
+    LIMIT 1
+  `) as unknown as MeetingRow[];
+
+  return rows[0] ? toMeeting(rows[0]) : null;
+}
+
+// Mutation functions are intentionally deferred until Week 04 forms are built.
+export async function addMeeting(
+  data: Omit<SacramentMeeting, "id">,
+): Promise<SacramentMeeting> {
+  void data;
+  throw new Error("addMeeting: database implementation is planned for Week 04.");
+}
+
+export async function updateMeeting(
+  id: number,
+  updates: Partial<SacramentMeeting>,
+): Promise<SacramentMeeting | null> {
+  void id;
+  void updates;
+  throw new Error("updateMeeting: database implementation is planned for Week 04.");
+}
+
+export async function deleteMeeting(id: number): Promise<boolean> {
+  void id;
+  throw new Error("deleteMeeting: database implementation is planned for Week 04.");
 }

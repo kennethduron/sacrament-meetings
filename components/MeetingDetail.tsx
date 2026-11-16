@@ -31,7 +31,9 @@ export default function MeetingDetail({ meeting }: MeetingDetailProps) {
                 ? "Sacrament Meeting"
                 : meeting.meetingType === "stake"
                   ? "Stake Sunday"
-                  : "General Conference Sunday"}
+                  : meeting.meetingType === "general"
+                    ? "General Conference Sunday"
+                    : "Special Meeting"}
           </h1>
           <p className="mt-2 text-lg text-slate-600">{formatMeetingDate(meeting.date)}</p>
         </div>

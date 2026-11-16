@@ -21,7 +21,9 @@ export default function MeetingCard({ meeting }: MeetingCardProps) {
                 ? "Sunday Sacrament Meeting"
                 : meeting.meetingType === "stake"
                   ? "Stake Sunday"
-                  : "General Conference Sunday"}
+                  : meeting.meetingType === "general"
+                    ? "General Conference Sunday"
+                    : "Special Meeting"}
           </h2>
         </div>
         <span className={`type-badge ${includesSacrament ? "type-badge-meeting" : "type-badge-observance"}`}>
