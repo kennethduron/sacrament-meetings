@@ -7,7 +7,7 @@
 - Pull request: [#1, open from `peer-code-review` to `main`](https://github.com/kennethduron/sacrament-meetings/pull/1)
 - `main` was not changed or merged.
 - The changes in this project are an individual Week 03 submission.
-- GitHub attributes the existing commits on this PR, including the first evidence update, to the login `kennethmarjorie8` while showing the author name Kenneth Duron. The published history was not rewritten. This repository now has a local-only Git author configuration for Kenneth Duron using the `kennethduron` account's GitHub noreply identity; future commits will use it.
+- GitHub attributed the earlier commits on this PR, including evidence-update commit `338f7c7`, to the login `kennethmarjorie8` while showing the author name Kenneth Duron. The published history was not rewritten. Before the latest commit (`7a0223b`), this repository's local-only Git author configuration was corrected to Kenneth Duron and the `kennethduron` account's GitHub noreply identity; the latest local commit metadata matches that identity.
 
 ## Neon and application configuration
 
